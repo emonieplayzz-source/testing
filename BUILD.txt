@@ -1,0 +1,28 @@
+BUILD RECORD - Lumivore 0.1.0 (stage 1)
+Recorded in the authoring environment: Linux x86_64, g++ (GCC), GNU make, git, python3, ffmpeg present.
+NOT present: CMake, Ninja, clang, MinGW/any Windows cross-compiler, MSVC, Windows SDK, JUCE, Wine, glslangValidator,
+a GPU, FL Studio. No network access (JUCE could not be fetched).
+
+VERIFIED (with evidence, run in this environment)
+  [pass] tests/core_test.cpp - JUCE-free audio core: g++ -std=c++17 -O2 -Wall -Wextra, 0 warnings
+         - 1 kHz sine peaks in the correct FFT bin; RMS of 0.5-amp sine = 0.354 (+/-0.01)
+         - 80 Hz -> bass band, 1 kHz -> mid band, 9 kHz -> treble band
+         - 20 synthetic 120 BPM kicks -> 20 beats detected
+         - steady noise after warm-up -> 0 false beats
+         - SPSC FIFO: 2,000,000 samples ordered across two threads; full FIFO rejects (never blocks)
+         - same tests pass under AddressSanitizer+UBSan and under ThreadSanitizer
+  Note: the first run of the noise test failed (false beat in steady noise); the detector threshold
+  was changed to mean + 3*stddev and the tests re-run to green.
+
+NOT VERIFIED
+  [not built]  JUCE layer (PluginProcessor/Editor/VisualizerComponent, CMakeLists.txt): written but never compiled.
+               Expect that a first real build may surface compile errors that need fixing.
+  [not tested] GLSL scenes: never compiled by a GPU driver.
+  [not tested] .vst3 bundle: no .vst3 exists yet. The deliverable VST3 and ZIP of binaries have NOT been produced.
+  [not tested] FL Studio 26 loading, plugin scanning, editor open/close, resize behavior.
+
+PLANNED BUILD CONFIGURATION (Windows)
+  Generator Visual Studio 17 2022, x64, Release, JUCE 8.0.4 via FetchContent, static MSVC runtime
+  (MultiThreaded), formats VST3 + Standalone, OpenGL 3.2 core context.
+  CI: .github/workflows/build-windows.yml builds on windows-2022, runs ctest, checks the bundle exists,
+  fails if the DLL imports VCRUNTIME/MSVCP/UCRT, then packages Lumivore-Windows-x64.zip.
